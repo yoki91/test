@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en" ng-app="testApp">
+<head>
+    <meta charset="UTF-8">
+    <title>Mi solución</title>
+
+    <link href="bower_components/bootstrap/dist/css/bootstrap.css" rel="stylesheet">
+    <link href="bower_components/tether/dist/css/tether.css" rel="stylesheet">
+    <link href="bower_components/tether/dist/css/tether-theme-arrows-dark.css" rel="stylesheet">
+    <link href="bower_components/tether/dist/css/tether-theme-arrows.css" rel="stylesheet">
+    <link href="bower_components/tether/dist/css/tether-theme-basic.css" rel="stylesheet">
+</head>
+<body ng-controller="ControladorJuego">
+
+
+<div class="form-group col-xs-12 col-sm-3 col-lg-3">
+    <input type="text" class="form-control" placeholder="Escribe algo por aquí" ng-model="input">
+</div>
+
+<button type="button" class="btn btn-primary" ng-click="calcular()">Calcular</button>
+<div>
+    <span style="position: absolute;left: 20px">Resultado: </span>
+    <p ng-model="resultado">{{resultado}}</p>
+</div>
+
+
+
+
+<script src="bower_components/angular/angular.js"></script>
+<script src="bower_components/angular-route/angular-route.js"></script>
+<script src="bower_components/jquery/dist/jquery.js"> </script>
+<script src="js/modelo_deporte.js"> </script>
+<script src="bower_components/tether/dist/js/tether.js"> </script>
+<script src="bower_components/bootstrap/dist/js/bootstrap.js"> </script>
+</body>
+</html>
