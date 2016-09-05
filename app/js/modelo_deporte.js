@@ -286,11 +286,7 @@ app.controller('ControladorJuego',['$scope','$log',function ($scope,$log) {
                         return;
                 }
 
-
-
-
-
-                if(teamBName.indexOf('*')>0)
+                if(teamBName.indexOf('*')==0)
                 {
                     var teamBServing = true;
                     teamBName = data[1].slice(Set_teamBScore_index+5,data[1].length);
