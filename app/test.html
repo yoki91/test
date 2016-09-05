@@ -32,11 +32,14 @@
                     Ejemplo: F.C. Barcelona 3-2 Real Madrid<br><br>
 
                     Tenis: teamAName (teamASets) teamAGames teamAScore - teamBScore teamBGames (teamBSets) isServing teamBName<br><br>
-                    Ejemplo:Anna Karolina Schmiedlova (1) 1 40-Adv 1 (0) *Varvara Lepchenko<br><br>
+                    Ejemplo:Anna Karolina Schmiedlova (1) 1 40-Adv 1 (0) *Varvara Lepchenko<br>
+                    Nota: teamScore sería uno de los siguientes valores: 00,15,30,40,Adv<br>
+                    Nota: isServing se marca con una * y siempre va delante del nombre del jugador<br><br>
 
 
                     Fútbol Americano: teamAName teamAScore - teamBScore teamBName Period<br><br>
-                    Ejemplo:Pittsburgh Steelers 3-7 Minnesota Vikings 3rd Quarter<br><br>
+                    Ejemplo:Pittsburgh Steelers 3-7 Minnesota Vikings 3rd Quarter<br>
+                    Nota: Period sería uno de los siguientes valores: 1st,2nd,3rd,4th<br><br>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-default" data-dismiss="modal">Cerrar</button>
@@ -50,7 +53,7 @@
     <input style="position: absolute;right: 110px" type="text" class="form-control" placeholder="Escribe algo por aquí" ng-model="input">'
 </div>
 
-<button style="position: absolute;left: 550px" type="button" class="btn btn-primary" ng-click="calcular()">Calcular</button>
+<button style="position: absolute;left: 550px" type="button" class="btn btn-primary" ng-click="calcular()" ng-disabled="!input">Calcular</button>
 </div>
 
 <div class="col-lg-12">

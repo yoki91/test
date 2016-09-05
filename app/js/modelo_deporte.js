@@ -44,6 +44,8 @@ app.controller('ControladorJuego',['$scope','$log',function ($scope,$log) {
         {
             alert(mensajeError);
             $scope.input='';
+            $scope.resultado='';
+            return;
         }
 
 
