@@ -5,419 +5,327 @@
 
 var app = angular.module('testApp',[]);
 app.controller('ControladorJuego',['$scope','$log',function ($scope,$log) {
-    $scope.calcular = function ()
-    {
+    $scope.calcular = function () {
+        //recoger la entrada con el scope
         var Infodeporte = $scope.input;
 
-        var encontrado =false;
+        //procesamos la entrada,verifica si tiene un formato correcto o no.
+        verificarFormato(Infodeporte);
+    }
+
+    //procesamos la entrada,verifica si tiene un formato correcto o no.
+    function verificarFormato(Infodeporte) {
+
+        var formatoFutbol = /^(.+?) (\d+)-(\d+) (.+?)$/;
+
+        var formatoTenis = /^(.+?) (\W)(\d+)(\W) (\d+) (.{2,})-(.{2,}) (\W)(\d+)(\W) (.+?)$/;
+
+        var formatoFutbolAmericano = /^(.+?) (\d+)-(\d+) (.+) (.+(?= Quarter)) (Quarter)$/;
+
+        if (formatoFutbolAmericano.test(Infodeporte)) {
+            //procesamos el dato como fútbolAmericano
+            var esCorrecto = false;
+            esCorrecto = salidaFutbolAm(Infodeporte);
+
+            if (esCorrecto)
+                return;
+            else {
+                errorAlert("mensajeErrorFubolA");
+                $scope.input = '';
+                $scope.resultado = '';
+                return;
+            }
+        }
+        if (formatoFutbol.test(Infodeporte)) {
+            //procesamos el dato como fútbol
+            var esCorrecto = false;
+            esCorrecto = salidaFutbol(Infodeporte);
+
+            if (esCorrecto)
+                return;
+            else {
+                errorAlert("mensajeErrorFutbol");
+                $scope.input = '';
+                $scope.resultado = '';
+                return;
+            }
+
+        }
+        if (formatoTenis.test(Infodeporte)) {
+            //procesamos el dato como tenis
+            var esCorrecto = false;
+            esCorrecto = salidoTenis(Infodeporte);
+            if (esCorrecto)
+                return;
+            else {
+                errorAlert("mensajeErrorTenis");
+                $scope.input = '';
+                $scope.resultado = '';
+                return;
+            }
+
+        }
+
+        errorAlert("mensajeError");
+        $scope.input = '';
+        $scope.resultado = '';
+        return;
+
+    }//fin verificarFormato
 
 
+    function salidaFutbol(Infodeporte) {
+
+        var datos = separarDatos(Infodeporte);
+        //asignamos valores a cada equipo;
+        var puntoEquipo = recuperarPuntoEquipo(datos);
+        var puntoEquipoA = puntoEquipo[0][0];
+        var puntoEquipoB = puntoEquipo[1][0];
+
+        var nombreEquipo = recuperarNombreEquipo(datos, puntoEquipoA);
+        var nombreEquipoA = nombreEquipo[0];
+        var nombreEquipoB = nombreEquipo[1];
 
 
+        $scope.resultado = {
+            teamAName: nombreEquipoA,
+            teamBName: nombreEquipoB,
+            teamAScore: puntoEquipoA,
+            teamBScore: puntoEquipoB
+        }
+
+        return true;
+    }
+
+    function salidaFutbolAm(Infodeporte) {
+        var datos = separarDatos(Infodeporte);
+        //recuperamos primero el periodo
+        var periodo = datos[1].slice(datos[1].indexOf("Quarter") - 4, datos[1].indexOf("Quarter") - 1);
+        if (periodo != "1st" && periodo != "2nd" && periodo != "3rd" && periodo != "4th") {
+            return false;
+        }
+        //quitamos el periodo para que la entrada como futbol
+        datos[1] = datos[1].replace(periodo + " Quarter", '');
+        var puntoEquipo = recuperarPuntoEquipo(datos);
+        var puntoEquipoA = puntoEquipo[0][0];
+        var puntoEquipoB = puntoEquipo[1][0];
+
+        var nombreEquipo = recuperarNombreEquipo(datos, puntoEquipoA);
+        var nombreEquipoA = nombreEquipo[0];
+        var nombreEquipoB = nombreEquipo[1];
+
+
+        $scope.resultado = {
+            teamAName: nombreEquipoA,
+            teamBName: nombreEquipoB,
+            teamAScore: puntoEquipoA,
+            teamBScore: puntoEquipoB,
+            currentPeriod: periodo
+        }
+
+        return true;
+
+    }
+
+    function salidoTenis(Infodeporte) {
+        var temp;
+        var datos = separarDatos(Infodeporte);
+        var puntoEquipo = recuperarPuntoEquipo(datos);
+        if (puntoEquipo[0].constructor === Array) {
+            var puntoEquipoA = puntoEquipo[0][0];
+            var puntoEquipoB = puntoEquipo[1];
+        }
+        else {
+            var puntoEquipoA = puntoEquipo[0];
+            var puntoEquipoB = puntoEquipo[1][0];
+        }
+
+        if ((puntoEquipoA != "00" && puntoEquipoA != "15" && puntoEquipoA != "30" && puntoEquipoA != "40") || puntoEquipoA == "null") {
+            var pattEquipoA = /\w+$/g;
+            temp = pattEquipoA.exec(datos[0]);
+            if (temp[0] != "Adv")
+                return false;
+            else
+               puntoEquipoA = temp[0];
+
+        }
+        if ((puntoEquipoB != "00" && puntoEquipoB != "15" && puntoEquipoB != "30" && puntoEquipoB != "40") || puntoEquipoB == "null") {
+            var pattEquipoB = /^\w+/g;
+            temp = pattEquipoB.exec(datos[1]);
+            if (temp[0] != "Adv")
+                return false;
+            else
+                puntoEquipoB = temp[0];
+
+        }
+        var setPunto = recuperarSetEquipo(datos);
+        var setPuntoA = setPunto[0][1];
+        var setPuntoB = setPunto[1][1];
+
+        var nombreEquipoA = datos[0].slice(0,datos[0].indexOf("(")-1);
+        var nombreEquipoB = datos[1].slice(datos[1].indexOf(")")+2,datos[1].length);
+
+        var EquipoBServing = esEquipoBserving(nombreEquipoA,nombreEquipoB);
+        if(EquipoBServing =="error")
+            return false;
+        if (EquipoBServing == true)
+            nombreEquipoB = nombreEquipoB.replace("*"," ");
+        if(EquipoBServing ==false)
+            nombreEquipoA = nombreEquipoA.replace("*"," ");
+
+        var partidoEquipoA = datos[0].slice(datos[0].indexOf(")")+1,datos[0].indexOf(puntoEquipoA));
+
+        var indexB = puntoEquipoB.length;
+        var indeB1 =datos[1].indexOf("(")-1;
+
+        var partidoEquipoB = datos[1].slice(puntoEquipoB.length,datos[1].indexOf("(")-1);
+
+
+        $scope.resultado=
+        {
+            teamAName: nombreEquipoA,
+            teamBName: nombreEquipoB,
+            teamAScore: puntoEquipoA,
+            teamBScore: puntoEquipoB,
+            teamAGames: partidoEquipoA,
+            teamBGames: partidoEquipoB,
+            teamBServing:EquipoBServing,
+            scoreboard:{
+                elements:[{
+                    title: "Sets",
+                    teamAScore: setPuntoA,
+                    teamBScore: setPuntoB
+                }]
+            }}
+        return true;
+    }
+    function separarDatos(Infodeporte) {
+        // separamos los datos de cada equipo para cada juego...
+        var resultado = Infodeporte.split("-");
+        return resultado;
+    }
+    function recuperarNombreEquipo(datos,puntoEquipoA) {
+        var index = 0;
+        var nombreEquipo = [];
+        var reg = new RegExp(puntoEquipoA+"$","g");
+        var puntoAIndex = datos[0].search(reg);
+        nombreEquipo.push(datos[0].slice(0,datos[0].indexOf(puntoAIndex)-1));
+        nombreEquipo.push(datos[1].slice(1,datos[1].length));
+
+        return nombreEquipo;
+    }
+    function recuperarPuntoEquipo(datos) {
+        var pattEquipoA = /\d+$/g;
+        var pattEquipoB = /^\d+/g;
+        var pattEquipos =[pattEquipoA,pattEquipoB];
+        var index = 0;
+        var puntoEquipo = []
+        while(index < datos.length)
+        {
+            var valor = pattEquipos[index].exec(datos[index])
+            if(valor == null)
+            {
+                valor = "null";
+            }
+            puntoEquipo.push(valor);
+            index = index+1;
+        }
+        return puntoEquipo;
+    }
+    function recuperarSetEquipo(datos) {
+        var pattSetA = /\((\d+)\)/g;
+        var pattSetB = /\((\d+)\)/g;
+        var pattSetEquipo = [pattSetA,pattSetB];
+        var index = 0;
+        var SetEquipo = [];
+        var valorA = pattSetEquipo[0].exec(datos[0]);
+        var valorB = pattSetEquipo[1].exec(datos[1]);
+        SetEquipo.push(valorA);
+        SetEquipo.push(valorB);
+        return SetEquipo;
+    }
+    function esEquipoBserving(nombreEquipoA,nombreEquipoB) {
+        //si la * no está, lanza el error
+        if(nombreEquipoA.indexOf('*')<0 && nombreEquipoB.indexOf('*')<0)
+        {
+            return "error";
+        }
+
+        //si hay * para los dos jugadores, lanza el error
+        if(nombreEquipoA.indexOf('*') >=0 && nombreEquipoB.indexOf('*') >=0)
+        {
+            return "error";
+        }
+        //si la * no está la primera posicion del nombre, lanza error
+        if(nombreEquipoA.indexOf('*') != 0 && nombreEquipoB.indexOf('*') != 0)
+        {
+            return "error";
+        }
+
+        if(nombreEquipoB.indexOf('*')==0)
+            var teamBServing = true;
+        else
+            teamBServing = false;
+
+        return teamBServing;
+
+
+    }
+    function errorAlert (mensaje)
+    {
         var mensajeError = "Ops, parece que el formato de la entrada no es correcto! Por favor siga uno de los siguientes formatos:\n\n" +
-            "Fútbol: teamAName teamAScore - teamBScore teamBName\n\n" +
-            "Tenis: teamAName (teamASets) teamAGames teamAScore - teamBScore teamBGames (teamBSets) isServing teamBName\n\n" +
-            "Fútbol Americano: teamAName teamAScore - teamBScore teamBName Period";
+            "Fútbol: teamAName teamAScore-teamBScore teamBName\n\n" +
+            "Tenis: teamAName (teamASets) teamAGames teamAScore-teamBScore teamBGames (teamBSets) isServing teamBName\n\n" +
+            "Fútbol Americano: teamAName teamAScore-teamBScore teamBName Period";
 
         var mensajeErrorFubolA = "Ops, parece que el formato de la entrada para el Fútbol Americano no es correcto! por favor siga el siguiente formato:\n\n" +
-            "Fútbol Americano: teamAName teamAScore - teamBScore teamBName Period";
-
-        var mensajeErrorCurrentPeriod = "Ops, parece que el formato del periodo no es correcto! Por favor siga uno de los siguiente formatos:\n\n" +
+            "Fútbol Americano: teamAName teamAScore-teamBScore teamBName Period\n\n" +
+            "Nota:el periodo solo puede ser uno de los siguientes formatos:\n\n" +
             "1st,2nd,3rd,4th";
 
 
-        var mensajeErrorTenis= "Ops, parece que el formato de la entrada para el Tenis no es correcto! por favor siga el siguiente formato:\n\n" +
-            "Tenis: teamAName (teamASets) teamAGames teamAScore - teamBScore teamBGames (teamBSets) isServing teamBName\n\n" +
-            "Nota: teamScore sería uno de los siguientes valores: 00,15,30,40,Adv\n\n"+
+        var mensajeErrorTenis = "Ops, parece que el formato de la entrada para el Tenis no es correcto! por favor siga el siguiente formato:\n\n" +
+            "Tenis: teamAName (teamASets) teamAGames teamAScore-teamBScore teamBGames (teamBSets) isServing teamBName\n\n" +
+            "Nota: teamScore sería uno de los siguientes valores: 00,15,30,40,Adv\n\n" +
             "Nota: isServing se marca con una * y siempre va delante del nombre del jugador"
 
 
-        var mensajeErrorFutbol ="Ops, parece que el formato de la entrada para el Fútbol no es correcto! por favor siga el siguiente formato:\n\n" +
-            "Fútbol: teamAName teamAScore - teamBScore teamBName\n\n";
+        var mensajeErrorFutbol = "Ops, parece que el formato de la entrada para el Fútbol no es correcto! por favor siga el siguiente formato:\n\n" +
+            "Fútbol: teamAName teamAScore-teamBScore teamBName\n\n";
 
-        //buscamos si el Infodeporte contiene -
-        var buscar = new RegExp("-");
-
-        var resultado = buscar.test(Infodeporte);
-
-        if(!resultado)
+        switch (mensaje)
         {
-            alert(mensajeError);
-            $scope.input='';
-            $scope.resultado='';
-            return;
+            case "mensajeError" :
+                alert(mensajeError);
+                $scope.input='';
+                $scope.resultado='';
+                return;
+                break;
+            case "mensajeErrorFubolA":
+                alert(mensajeErrorFubolA);
+                $scope.input='';
+                $scope.resultado='';
+                return;
+                break;
+            case "mensajeErrorTenis":
+                alert(mensajeErrorTenis);
+                $scope.input='';
+                $scope.resultado='';
+                return;
+                break;
+            case "mensajeErrorFutbol":
+                alert(mensajeErrorFutbol);
+                $scope.input='';
+                $scope.resultado='';
+                return;
+                break;
+            default:
+                alert(mensajeError);
+                $scope.input='';
+                $scope.resultado='';
+                return;
         }
 
-
-
-        else
-        {
-            var data = Infodeporte.split('-');
-            $log.debug(data);
-
-            //Si el numero de elementos del array es más que 2, el usuario ha puesto más de 1 '-'
-            if(data.length !=2)
-            {
-            	alert(mensajeError);
-            	return;
-            }
-            
-
-            //primero intentamos averiguar cual de los tres juegos corresponde
-            //intentamos buscar la palabra clave Quarter, si existe se tratra del fútbol americano
-
-             buscar = /Quarter/i;
-
-            //importante buscarlo en data[1]
-            var esFutbolAmericano = buscar.test(data[1])
-
-            if(esFutbolAmericano && encontrado==false)
-            {
-                //procesamos el caso del fútbol americano
-                var teamAScore_error = false;
-                var teamAScore_patt = /[0-9]/g;
-                while(teamAScore_patt.test(data[0]) == true)
-                {
-                    //buscamos la posición después del numero
-                    var teamAScore_index = teamAScore_patt.lastIndex;
-
-                    //verifica si una posición antes del numero es una letra, si una posición después del num es una letra.
-                    // si la última lectura nos devuelve undefined(porque lastIndex es una posición despúes..), ha leido solo numeros en la cadena.
-                    if(isNaN(data[0][teamAScore_index-2])  || (isNaN(data[0][teamAScore_index]) && data[0][teamAScore_index] != undefined ))
-                    {
-                        teamAScore_error=true;
-                        break;
-                    }
-                }
-
-                if(teamAScore_error)
-                {
-                    alert(mensajeErrorFubolA);
-                    $scope.input='';
-                    $scope.resultado='';
-                    return;
-                }
-
-
-
-
-                var currentPeriod = data[1].slice(data[1].indexOf("Quarter")-4,data[1].indexOf("Quarter")-1);
-                $log.debug(currentPeriod);
-                if(currentPeriod != "1st" && currentPeriod != "2nd" && currentPeriod != "3rd" && currentPeriod != "4th")
-                {
-                    alert(mensajeErrorCurrentPeriod);
-                    $scope.input='';
-                    $scope.resultado='';
-                    return;
-
-                }
-
-                var data1_copy = data[1];
-                var temp = data1_copy.replace(currentPeriod,'');
-                var teamBScore_error = false;
-                var teamBScore_patt = /[0-9]/g;
-                while(teamBScore_patt.test(temp) == true)
-                {
-
-                    var teamBScore_index = teamBScore_patt.lastIndex;
-                    var valueB = data[1][teamBScore_index];
-
-                    if( (data[1][teamBScore_index-2] != undefined) &&  (isNaN(data[1][teamBScore_index-2]) || (isNaN(data[1][teamBScore_index]) &&  data[1][teamBScore_index] != " ")))
-                    {
-                        teamBScore_error=true;
-                        break;
-                    }
-
-                }
-
-                if(teamBScore_error)
-                {
-                    alert(mensajeErrorFubolA);
-                    $scope.input='';
-                    $scope.resultado='';
-                    return;
-                }
-                    //si no ha lanzado ningun error, recogemos el valor del score
-                    var teamAScore = data[0].replace(/[^0-9]/g,'');
-                
-                        data1_copy = data[1];
-                        temp = data1_copy.replace(currentPeriod,'');
-                    var teamBScore = temp.replace(/[^0-9]/g,'');
-
-
-
-                    var teamAName = data[0].slice(0,teamAScore_index-1);
-                    $log.debug(teamAName);
-                    var teamBName_index = data[1].indexOf("Quarter")-5;
-
-                    var teamBName = data[1].slice(2,teamBName_index);
-                    $log.debug(teamBName);
-
-
-                        //formamos el JSON final del Futbol americano
-                        $scope.resultado=
-                        {
-                            teamAName: teamAName,
-                            teamBName: teamBName,
-                            teamAScore: teamAScore,
-                            teamBScore: teamBScore,
-                            currentPeriod: currentPeriod
-                        }
-                        $log.debug($scope.resultado);
-                        encontrado=true;
-
-
-            }
-
-            var esTenis = data[0].indexOf("(");
-            if(esTenis > 0 && encontrado==false)
-            {
-                //procesamos el caso del tenis
-                var teamAScore_index = data[0].length-1;
-                var teamAScore = data[0][teamAScore_index];
-
-                //si teamAScore ='Adv', leer 3 caracteres
-                if(isNaN(teamAScore))
-                {
-                    teamAScore = data[0].slice(teamAScore_index-2,teamAScore_index+1);
-                }
-                else
-                {
-                    teamAScore = data[0].slice(teamAScore_index-1,teamAScore_index+1);
-                }
-                 
-                //si teamBScore ='Adv', leer 3 caracteres
-                var teamBScore = data[1][0];
-                if(isNaN(teamBScore))
-                {
-                    var teamBScore = data[1].slice(0,3);
-                }
-                else
-                {
-                    var teamBScore = data[1].slice(0,2);
-                }
-
-
-                if(isNaN(teamAScore) || isNaN(teamBScore))
-                {
-                    if(teamAScore != "Adv" && teamBScore != "Adv")
-                    {
-                        alert(mensajeErrorTenis);
-                        $scope.input='';
-                        $scope.resultado='';
-                        return;
-                    }
-                    
-
-                }
-
-
-
-                var Set_teamAScore_index= data[0].indexOf("(");
-
-                var Set_teamAScore = data[0][Set_teamAScore_index+1];
-
-                var Set_teamBScore_index = data[1].indexOf("(");
-
-                var Set_teamBScore=data[1][Set_teamBScore_index+1];
-
-
-                if(isNaN(Set_teamAScore) || isNaN(Set_teamBScore))
-                {
-                    alert(mensajeErrorTenis);
-                    $scope.input='';
-                    $scope.resultado='';
-                    return;
-                }
-
-
-                if(data[0][Set_teamAScore_index+2] !=")" || data[1][Set_teamBScore_index+2] !=")")
-                {
-                	alert(mensajeErrorTenis);
-                    $scope.input='';
-                    $scope.resultado='';
-                    return;
-                }
-
-
-                var teamAGames = data[0].slice(Set_teamAScore_index+3,Set_teamAScore_index+5);
-
-                var teamBGames = data[1].slice(Set_teamBScore_index-3,Set_teamBScore_index-1);
-
-
-                if(isNaN(teamAGames) || isNaN(teamBGames))
-                {
-                    alert(mensajeErrorTenis);
-                    $scope.input='';
-                    $scope.resultado='';
-                    return;
-                }
-
-
-                var teamAName = data[0].slice(0,Set_teamAScore_index-1);
-                var teamBName = data[1].slice(Set_teamBScore_index+4,data[1].length);
-
-
-
-                //si la * no está, lanza el error
-                if(teamAName.indexOf('*')<0 && teamBName.indexOf('*')<0)
-                {
-
-                	    alert(mensajeErrorTenis);
-                        $scope.input='';
-                        $scope.resultado='';
-                        return;
-                }
-
-                 //si hay * para los dos jugadores, lanza el error
-                 if(teamAName.indexOf('*') >=0 && teamBName.indexOf('*') >=0)
-                {
-
-                	    alert(mensajeErrorTenis);
-                        $scope.input='';
-                        $scope.resultado='';
-                        return;
-                }
-
-                //si la * no está la primera posicion del nombre, lanza error
-                if(teamAName.indexOf('*') != 0 && teamBName.indexOf('*') != 0)
-                {
-                		alert(mensajeErrorTenis);
-                        $scope.input='';
-                        $scope.resultado='';
-                        return;
-                }
-
-                if(teamBName.indexOf('*')==0)
-                {
-                    var teamBServing = true;
-                    teamBName = data[1].slice(Set_teamBScore_index+5,data[1].length);
-                }
-                else
-                {
-                    teamBServing=false;
-                    teamBName = data[1].slice(Set_teamBScore_index+4,data[1].length);
-                    
-                }
-
-                if(teamBServing)
-                {
-                	teamAName = data[0].slice(0,Set_teamAScore_index-1);
-                }
-                else
-                {
-                	teamAName = data[0].slice(1,Set_teamAScore_index-1);
-                }
-
-
-                $scope.resultado=
-                {
-                    teamAName: teamAName,
-                    teamBName: teamBName,
-                    teamAScore: teamAScore,
-                    teamBScore: teamBScore,
-                    teamAGames: teamAGames,
-                    teamBGames: teamBGames,
-                    teamBServing:teamBServing,
-                    scoreboard:{
-                        elements:[{
-                            title: "Sets",
-                            teamAScore: Set_teamAScore,
-                            teamBScore: Set_teamBScore
-                        }]
-                    }}
-                encontrado=true;
-            }
-
-
-            if(!esFutbolAmericano && encontrado == false)
-            {
-                //procesamos el caso del fútbol
-                var teamAScore_error = false;
-                var teamAScore_patt = /[0-9]/g;
-                while(teamAScore_patt.test(data[0]) == true)
-                {
-                    //buscamos la posición después del numero
-                    var teamAScore_index = teamAScore_patt.lastIndex;
-
-                    //verifica si una posición antes del numero es una letra, si una posición después del num es una letra.
-                    // si la última lectura nos devuelve undefined(porque lastIndex es una posición despúes..), ha leido solo numeros en la cadena.
-                    if(isNaN(data[0][teamAScore_index-2])  || (isNaN(data[0][teamAScore_index]) && data[0][teamAScore_index] != undefined ))
-                    {
-                        teamAScore_error=true;
-                        break;
-                    }
-                }
-
-
-
-                if(teamAScore_error)
-                {
-                    alert(mensajeErrorFutbol);
-                    $scope.input='';
-                    $scope.resultado='';
-                    return;
-                }
-
-                var teamBScore_error = false;
-                var teamBScore_patt = /[0-9]/g;
-                while(teamBScore_patt.test(data[1]) == true)
-                {
-
-                    var teamBScore_index = teamBScore_patt.lastIndex;
-                    var valueB = data[1][teamBScore_index];
-
-                    if( (data[1][teamBScore_index-2] != undefined) &&  (isNaN(data[1][teamBScore_index-2]) || (isNaN(data[1][teamBScore_index]) &&  data[1][teamBScore_index] != " ")))
-                    {
-                        teamBScore_error=true;
-                        break;
-                    }
-                }
-                if(teamBScore_error)
-                {
-                    alert(mensajeErrorFutbol);
-                    $scope.input='';
-                    $scope.resultado='';
-                    return;
-                }
-
-
-
-
-
-               //si no ha lanzado ningun error, recogemos el valor del score
-                var teamAScore = data[0].replace(/[^0-9]/g,'');
-                var teamBScore = data[1].replace(/[^0-9]/g,'');
-
-
-                var teamAName = data[0].slice(0,data[0].indexOf(teamAScore)-1);
-                var teamBName = data[1].slice(teamBScore.length+1,data[1].length);
-
-                
-                //si el equipo contiene numeros, lanza un error
-                var teamAName_error = /\d/.test(teamAName);
-
-                var teamBName_error = /\d/.test(teamBName);
-
-                if( teamAName_error || teamBName_error)
-                {
-                	alert(mensajeErrorFutbol);
-                    $scope.input='';
-                    $scope.resultado='';
-                    return;
-                }
-
-                $scope.resultado={
-                    teamAName: teamAName,
-                    teamBName: teamBName,
-                    teamAScore: teamAScore,
-                    teamBScore: teamBScore
-
-                }
-                encontrado=true;
-            }
-
-        }//end else
 
     }
 
