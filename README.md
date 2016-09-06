@@ -24,12 +24,12 @@ Depedencias:
 
 Por favor, aplica el comando "bower install --save" para installar los componentes necesarios o descargar los siguientes componentes manualmente:(creando un directorio bower_components dentro del directorio app)
 
- -angular
- -angular-loader
- -angular-mocks
- -angular-route
- -bootstrap
- -font-awesome
- -html5-boilerplate
- -jquery
- -tether
+ - angular
+ - angular-loader
+ - angular-mocks
+ - angular-route
+ - bootstrap
+ - font-awesome
+ - html5-boilerplate
+ - jquery
+ - tether
