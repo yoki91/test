@@ -85,8 +85,6 @@ app.controller('ControladorJuego',['$scope','$log',function ($scope,$log) {
         var nombreEquipo = recuperarNombreEquipo(datos, puntoEquipoA);
         var nombreEquipoA = nombreEquipo[0];
         var nombreEquipoB = nombreEquipo[1];
-
-
         $scope.resultado = {
             teamAName: nombreEquipoA,
             teamBName: nombreEquipoB,
@@ -114,7 +112,6 @@ app.controller('ControladorJuego',['$scope','$log',function ($scope,$log) {
         var nombreEquipoA = nombreEquipo[0];
         var nombreEquipoB = nombreEquipo[1];
 
-
         $scope.resultado = {
             teamAName: nombreEquipoA,
             teamBName: nombreEquipoB,
@@ -124,7 +121,6 @@ app.controller('ControladorJuego',['$scope','$log',function ($scope,$log) {
         }
 
         return true;
-
     }
 
     function salidoTenis(Infodeporte) {
@@ -139,7 +135,6 @@ app.controller('ControladorJuego',['$scope','$log',function ($scope,$log) {
             var puntoEquipoA = puntoEquipo[0];
             var puntoEquipoB = puntoEquipo[1][0];
         }
-
         if ((puntoEquipoA != "00" && puntoEquipoA != "15" && puntoEquipoA != "30" && puntoEquipoA != "40") || puntoEquipoA == "null") {
             var pattEquipoA = /\w+$/g;
             temp = pattEquipoA.exec(datos[0]);
@@ -147,7 +142,6 @@ app.controller('ControladorJuego',['$scope','$log',function ($scope,$log) {
                 return false;
             else
                puntoEquipoA = temp[0];
-
         }
         if ((puntoEquipoB != "00" && puntoEquipoB != "15" && puntoEquipoB != "30" && puntoEquipoB != "40") || puntoEquipoB == "null") {
             var pattEquipoB = /^\w+/g;
@@ -156,7 +150,6 @@ app.controller('ControladorJuego',['$scope','$log',function ($scope,$log) {
                 return false;
             else
                 puntoEquipoB = temp[0];
-
         }
         var setPunto = recuperarSetEquipo(datos);
         var setPuntoA = setPunto[0][1];
@@ -174,10 +167,6 @@ app.controller('ControladorJuego',['$scope','$log',function ($scope,$log) {
             nombreEquipoA = nombreEquipoA.replace("*"," ");
 
         var partidoEquipoA = datos[0].slice(datos[0].indexOf(")")+1,datos[0].indexOf(puntoEquipoA));
-
-        var indexB = puntoEquipoB.length;
-        var indeB1 =datos[1].indexOf("(")-1;
-
         var partidoEquipoB = datos[1].slice(puntoEquipoB.length,datos[1].indexOf("(")-1);
 
 
@@ -297,32 +286,22 @@ app.controller('ControladorJuego',['$scope','$log',function ($scope,$log) {
         {
             case "mensajeError" :
                 alert(mensajeError);
-                $scope.input='';
-                $scope.resultado='';
                 return;
                 break;
             case "mensajeErrorFubolA":
                 alert(mensajeErrorFubolA);
-                $scope.input='';
-                $scope.resultado='';
                 return;
                 break;
             case "mensajeErrorTenis":
                 alert(mensajeErrorTenis);
-                $scope.input='';
-                $scope.resultado='';
                 return;
                 break;
             case "mensajeErrorFutbol":
                 alert(mensajeErrorFutbol);
-                $scope.input='';
-                $scope.resultado='';
                 return;
                 break;
             default:
                 alert(mensajeError);
-                $scope.input='';
-                $scope.resultado='';
                 return;
         }
 
